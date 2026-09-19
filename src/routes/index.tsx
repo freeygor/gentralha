@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { supabase } from '@/integrations/supabase/client';
-import { Target, Clock, Activity, Crosshair, HelpCircle } from 'lucide-react';
+import { Target, Clock, Activity, Crosshair, HelpCircle, Trophy, User, LogOut } from 'lucide-react';
 
 export const Route = createFileRoute('/')({
   component: AimTrainer,
@@ -14,7 +14,18 @@ function AimTrainer() {
   const [misses, setMisses] = React.useState(0);
   const [timeLeft, setTimeLeft] = React.useState(30);
   const [targetPos, setTargetPos] = React.useState({ x: 50, y: 50 });
+  const [session, setSession] = React.useState<any>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const spawnTarget = React.useCallback(() => {
     if (!containerRef.current) return;
@@ -50,9 +61,7 @@ function AimTrainer() {
 
   const saveSession = async (finalHits: number, finalMisses: number, finalScore: number) => {
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session?.user?.id) {
+      if (!session?.user?.id) {
         console.log("Sessão de usuário não encontrada, o progresso não será salvo.");
         return;
       }
@@ -75,8 +84,6 @@ function AimTrainer() {
 
       if (error) {
         console.error("Erro do Supabase ao salvar a sessão:", error.message);
-      } else {
-        console.log("Sessão salva com sucesso no banco de dados!");
       }
     } catch (err) {
       console.error("Erro inesperado ao salvar os resultados:", err);
@@ -106,6 +113,10 @@ function AimTrainer() {
     setScore((s) => Math.max(0, s - 20));
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
+
   const precision = hits + misses > 0 ? Math.round((hits / (hits + misses)) * 100) : 0;
 
   return (
@@ -116,8 +127,21 @@ function AimTrainer() {
             <Crosshair className="w-8 h-8 text-primary" />
             <h1 className="text-xl font-bold text-foreground tracking-tight">Gentralha Aim</h1>
           </div>
-          <div className="flex gap-4">
-            {/* Espaço reservado para o menu de auth */}
+          <div className="flex gap-4 items-center">
+            {session ? (
+              <>
+                <Link to="/dashboard" className="flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-primary transition-colors">
+                  <Trophy className="w-4 h-4" /> Ranking
+                </Link>
+                <button onClick={handleLogout} className="flex items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-destructive transition-colors">
+                  <LogOut className="w-4 h-4" /> Sair
+                </button>
+              </>
+            ) : (
+              <Link to="/auth" className="px-4 py-2 bg-primary text-primary-foreground text-sm font-bold rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2">
+                <User className="w-4 h-4" /> Entrar
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -226,10 +250,12 @@ function AimTrainer() {
           )}
         </div>
         
-        <div className="flex items-center gap-2 text-muted-foreground text-sm bg-muted/50 px-4 py-2 rounded-full">
-          <HelpCircle className="w-4 h-4" />
-          <p>É necessário estar autenticado para registrar seu desempenho no ranking global.</p>
-        </div>
+        {!session && (
+          <div className="flex items-center gap-2 text-muted-foreground text-sm bg-muted/50 px-4 py-2 rounded-full">
+            <HelpCircle className="w-4 h-4" />
+            <p>É necessário estar autenticado para registrar seu desempenho no ranking global.</p>
+          </div>
+        )}
       </main>
     </div>
   );
