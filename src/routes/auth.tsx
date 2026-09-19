@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router';
 import { supabase } from '@/integrations/supabase/client';
-import { Crosshair, AlertCircle, ArrowLeft } from 'lucide-react';
+import { AlertCircle, ArrowLeft } from 'lucide-react';
 
 export const Route = createFileRoute('/auth')({
   component: AuthPage,
@@ -65,85 +65,97 @@ function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-4 relative font-sans overflow-hidden">
+      {/* Fundo imersivo */}
+      <div 
+        className="absolute inset-0 z-0 opacity-20 pointer-events-none"
+        style={{ 
+          backgroundImage: 'url("/uploads/gen_banner_smoke.png")', 
+          backgroundSize: 'cover', 
+          backgroundPosition: 'center' 
+        }} 
+      />
+
       <Link 
-        to="/" 
-        className="absolute top-6 left-6 flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+        to="/"
+        className="absolute top-6 left-6 z-10 flex items-center gap-2 text-zinc-400 hover:text-green-500 transition-colors bg-zinc-900/50 backdrop-blur-sm px-4 py-2 rounded-full border border-green-900/30"
       >
-        <ArrowLeft className="w-4 h-4" /> Voltar ao Início
+        <ArrowLeft className="w-4 h-4" /> Voltar ao Quartel
       </Link>
 
-      <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-xl overflow-hidden">
-        <div className="p-8 text-center border-b border-border bg-muted/20">
-          <div className="mx-auto bg-primary/10 w-16 h-16 flex items-center justify-center rounded-2xl mb-4">
-            <Crosshair className="w-8 h-8 text-primary" />
+      <div className="w-full max-w-md bg-zinc-900/90 backdrop-blur-md border border-green-900/50 rounded-2xl shadow-[0_0_40px_rgba(34,197,94,0.1)] overflow-hidden relative z-10">
+        <div className="p-8 text-center border-b border-green-900/30 bg-black/40">
+          <div className="mx-auto w-20 h-20 flex items-center justify-center rounded-xl mb-6 bg-black border border-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.4)] overflow-hidden">
+             <img src="/uploads/gen_logo_smoke.png" alt="Gentralha Logo" className="w-full h-full object-cover" />
           </div>
-          <h2 className="text-2xl font-bold text-foreground">
-            Gentralha Aim
+          <h2 className="text-3xl font-black text-white tracking-wider uppercase">
+            Gentralha <span className="text-green-500">Aim</span>
           </h2>
-          <p className="text-muted-foreground mt-1">
-            {isLogin ? 'Bem-vindo de volta, atirador.' : 'Junte-se à elite da mira.'}
+          <p className="text-green-400/80 mt-2 font-medium tracking-wide">
+            {isLogin ? 'Autenticação Necessária' : 'Alistamento na Elite'}
           </p>
         </div>
 
         <div className="p-8">
-          <div className="flex rounded-lg bg-muted p-1 mb-6">
+          <div className="flex rounded-lg bg-zinc-950/50 p-1 mb-8 border border-zinc-800">
             <button
+              type="button"
               onClick={() => { setIsLogin(true); setError(''); }}
-              className={`flex-1 py-2 text-sm font-semibold rounded-md transition-colors ${isLogin ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`flex-1 py-2.5 text-sm font-bold uppercase tracking-wider rounded-md transition-all ${isLogin ? 'bg-green-600 shadow-md text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
             >
-              Entrar
+              Acessar
             </button>
             <button
+              type="button"
               onClick={() => { setIsLogin(false); setError(''); }}
-              className={`flex-1 py-2 text-sm font-semibold rounded-md transition-colors ${!isLogin ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`flex-1 py-2.5 text-sm font-bold uppercase tracking-wider rounded-md transition-all ${!isLogin ? 'bg-green-600 shadow-md text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
             >
-              Nova Conta
+              Registrar
             </button>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
-              <p className="text-sm text-destructive">{error}</p>
+            <div className="mb-6 p-4 bg-red-950/50 border border-red-500/30 rounded-lg flex items-start gap-3 backdrop-blur-sm">
+              <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+              <p className="text-sm text-red-200">{error}</p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {!isLogin && (
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Apelido / Nome</label>
+                <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Codinome</label>
                 <input 
                   type="text" 
                   required
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
-                  className="w-full px-4 py-3 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                  placeholder="Como seremos conhecidos no ranking?"
+                  className="w-full px-4 py-3 bg-zinc-950/80 border border-zinc-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500 transition-all placeholder:text-zinc-600"
+                  placeholder="Ex: ToxicSniper"
                 />
               </div>
             )}
             
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">E-mail</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Rede (E-mail)</label>
               <input 
                 type="email" 
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                placeholder="seu@email.com"
+                className="w-full px-4 py-3 bg-zinc-950/80 border border-zinc-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500 transition-all placeholder:text-zinc-600"
+                placeholder="agente@gentralha.com"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Senha</label>
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Chave de Acesso</label>
               <input 
                 type="password" 
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-background border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                className="w-full px-4 py-3 bg-zinc-950/80 border border-zinc-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500 transition-all placeholder:text-zinc-600"
                  placeholder="••••••••"
               />
             </div>
@@ -151,9 +163,9 @@ function AuthPage() {
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full py-3 mt-6 bg-primary text-primary-foreground font-bold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+              className="w-full py-4 mt-8 bg-green-600 text-white font-black uppercase tracking-widest rounded-lg hover:bg-green-500 transition-colors disabled:opacity-50 shadow-[0_0_20px_rgba(34,197,94,0.3)]"
             >
-              {loading ? 'Aguarde...' : (isLogin ? 'Entrar no Sistema' : 'Criar Conta')}
+              {loading ? 'Processando...' : (isLogin ? 'Iniciar Sessão' : 'Criar Perfil')}
             </button>
           </form>
         </div>
